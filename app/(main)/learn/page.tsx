@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { FeedWrapper } from "@/components/feed-wrapper";
+import { LanguageSelector } from "@/components/language-selector";
 import { Promo } from "@/components/promo";
 import { Quests } from "@/components/quests";
 import { StickyWrapper } from "@/components/sticky-wrapper";
@@ -13,8 +14,6 @@ import {
   getUserProgress,
   getUserSubscription,
 } from "@/db/queries";
-
-import { LanguageSelector } from "@/components/language-selector";
 
 import { Header } from "./header";
 import { Unit } from "./unit";
