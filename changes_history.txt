@@ -1,0 +1,14 @@
+# History of Changes
+
+- [x] Created `components/language-selector.tsx` to allow users to switch courses.
+- [x] Updated `app/(main)/learn/page.tsx` to fetch available courses and integrate the `LanguageSelector`.
+- [x] Updated `app/(main)/learn/header.tsx` to accept and render children components (for the language selector).
+- [x] Added "Simulator" section to the sidebar.
+- [x] Created `app/(main)/simulator/page.tsx` and related components (`unit.tsx`, `lesson-button.tsx`) for the simulator interface.
+- [x] Implemented "Exam" mode at `app/lesson/[lessonId]/exam/page.tsx`.
+- [x] Created `app/lesson/exam-quiz.tsx` for exam logic (no hearts, local result tracking).
+- [x] Created `app/lesson/results-screen.tsx` to display exam results.
+- [x] Updated `db/schema.ts` to include `audioSrc` in `challenges` table and "LISTEN" challenge type.
+- [x] Created `components/audio-player.tsx` for playing audio challenges.
+- [x] Updated `app/lesson/challenge.tsx` to render `AudioPlayer` for "LISTEN" challenges.
+- [x] Updated `app/lesson/quiz.tsx` and `app/lesson/exam-quiz.tsx` to pass audio source to challenges.
