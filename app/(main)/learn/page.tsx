@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { LanguageSelector } from "@/components/language-selector";
 import { Promo } from "@/components/promo";
