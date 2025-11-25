@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { LanguageSelector } from "@/components/language-selector";
 import { Promo } from "@/components/promo";
@@ -15,8 +14,8 @@ import {
     getUserSubscription,
 } from "@/db/queries";
 
-import { Unit } from "./unit";
 import { Header } from "../learn/header";
+import { Unit } from "./unit";
 
 const SimulatorPage = async () => {
     const userProgressData = getUserProgress();
