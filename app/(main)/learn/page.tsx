@@ -1,22 +1,18 @@
 import { redirect } from "next/navigation";
 
-import { FeedWrapper } from "@/components/feed-wrapper";
-import { LanguageSelector } from "@/components/language-selector";
 import { Promo } from "@/components/promo";
 import { Quests } from "@/components/quests";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { UserProgress } from "@/components/user-progress";
 import {
   getCourseProgress,
-  getCourses,
   getLessonPercentage,
   getUnits,
   getUserProgress,
   getUserSubscription,
 } from "@/db/queries";
 
-import { Header } from "./header";
-import { Unit } from "./unit";
+import { LearnContent } from "./learn-content";
 
 const LearnPage = async () => {
   const userProgressData = getUserProgress();
@@ -24,7 +20,6 @@ const LearnPage = async () => {
   const lessonPercentageData = getLessonPercentage();
   const unitsData = getUnits();
   const userSubscriptionData = getUserSubscription();
-  const coursesData = getCourses();
 
   const [
     userProgress,
@@ -32,14 +27,12 @@ const LearnPage = async () => {
     courseProgress,
     lessonPercentage,
     userSubscription,
-    courses,
   ] = await Promise.all([
     userProgressData,
     unitsData,
     courseProgressData,
     lessonPercentageData,
     userSubscriptionData,
-    coursesData,
   ]);
 
   if (!courseProgress || !userProgress || !userProgress.activeCourse)
@@ -60,27 +53,12 @@ const LearnPage = async () => {
         {!isPro && <Promo />}
         <Quests points={userProgress.points} />
       </StickyWrapper>
-      <FeedWrapper>
-        <Header title={userProgress.activeCourse.title}>
-          <LanguageSelector
-            courses={courses}
-            activeCourseId={userProgress.activeCourse.id}
-          />
-        </Header>
-        {units.map((unit) => (
-          <div key={unit.id} className="mb-10">
-            <Unit
-              id={unit.id}
-              order={unit.order}
-              description={unit.description}
-              title={unit.title}
-              lessons={unit.lessons}
-              activeLesson={courseProgress.activeLesson}
-              activeLessonPercentage={lessonPercentage}
-            />
-          </div>
-        ))}
-      </FeedWrapper>
+      <LearnContent
+        courseTitle={userProgress.activeCourse.title}
+        units={units}
+        courseProgress={courseProgress}
+        lessonPercentage={lessonPercentage}
+      />
     </div>
   );
 };
