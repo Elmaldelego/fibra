@@ -5,9 +5,7 @@ import { Quests } from "@/components/quests";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { UserProgress } from "@/components/user-progress";
 import {
-    getCourseProgress,
-    getLessonPercentage,
-    getUnits,
+    getExams,
     getUserProgress,
     getUserSubscription,
 } from "@/db/queries";
@@ -16,26 +14,20 @@ import { SimulatorContent } from "./simulator-content";
 
 const SimulatorPage = async () => {
     const userProgressData = getUserProgress();
-    const courseProgressData = getCourseProgress();
-    const lessonPercentageData = getLessonPercentage();
-    const unitsData = getUnits();
+    const examsData = getExams();
     const userSubscriptionData = getUserSubscription();
 
     const [
         userProgress,
-        units,
-        courseProgress,
-        lessonPercentage,
+        exams,
         userSubscription,
     ] = await Promise.all([
         userProgressData,
-        unitsData,
-        courseProgressData,
-        lessonPercentageData,
+        examsData,
         userSubscriptionData,
     ]);
 
-    if (!courseProgress || !userProgress || !userProgress.activeCourse)
+    if (!userProgress || !userProgress.activeCourse)
         redirect("/courses");
 
     const isPro = !!userSubscription?.isActive;
@@ -54,12 +46,11 @@ const SimulatorPage = async () => {
                 <Quests points={userProgress.points} />
             </StickyWrapper>
             <SimulatorContent
-                units={units}
-                courseProgress={courseProgress}
-                lessonPercentage={lessonPercentage}
+                exams={exams}
             />
         </div>
     );
 };
 
 export default SimulatorPage;
+

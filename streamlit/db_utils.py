@@ -281,3 +281,101 @@ def delete_challenge_option(option_id: int):
     conn.commit()
     cur.close()
     conn.close()
+
+# ==================== EXAMS ====================
+
+def get_exams(course_id: Optional[int] = None) -> List[Dict]:
+    """Get all exams or exams for a specific course"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    if course_id:
+        cur.execute(
+            "SELECT * FROM exams WHERE course_id = %s ORDER BY \"order\"",
+            (course_id,)
+        )
+    else:
+        cur.execute("SELECT * FROM exams ORDER BY course_id, \"order\"")
+    exams = cur.fetchall()
+    cur.close()
+    conn.close()
+    return exams
+
+def create_exam(title: str, description: str, course_id: int, order: int) -> int:
+    """Create a new exam"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO exams (title, description, course_id, \"order\") VALUES (%s, %s, %s, %s) RETURNING id",
+        (title, description, course_id, order)
+    )
+    exam_id = cur.fetchone()['id']
+    conn.commit()
+    cur.close()
+    conn.close()
+    return exam_id
+
+def update_exam(exam_id: int, title: str, description: str, course_id: int, order: int):
+    """Update an existing exam"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE exams SET title = %s, description = %s, course_id = %s, \"order\" = %s WHERE id = %s",
+        (title, description, course_id, order, exam_id)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def delete_exam(exam_id: int):
+    """Delete an exam"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM exams WHERE id = %s", (exam_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# ==================== EXAM LESSONS ====================
+
+def get_exam_lessons(exam_id: int) -> List[Dict]:
+    """Get all lessons assigned to an exam"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT el.*, l.title as lesson_title
+        FROM exam_lessons el
+        JOIN lessons l ON el.lesson_id = l.id
+        WHERE el.exam_id = %s
+        ORDER BY el.\"order\"
+        """,
+        (exam_id,)
+    )
+    exam_lessons = cur.fetchall()
+    cur.close()
+    conn.close()
+    return exam_lessons
+
+def add_lesson_to_exam(exam_id: int, lesson_id: int, order: int) -> int:
+    """Add a lesson to an exam"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO exam_lessons (exam_id, lesson_id, \"order\") VALUES (%s, %s, %s) RETURNING id",
+        (exam_id, lesson_id, order)
+    )
+    exam_lesson_id = cur.fetchone()['id']
+    conn.commit()
+    cur.close()
+    conn.close()
+    return exam_lesson_id
+
+def remove_lesson_from_exam(exam_lesson_id: int):
+    """Remove a lesson from an exam"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM exam_lessons WHERE id = %s", (exam_lesson_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+

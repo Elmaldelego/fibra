@@ -155,3 +155,71 @@ export const userSubscription = pgTable("user_subscription", {
   stripePriceId: text("stripe_price_id").notNull(),
   stripeCurrentPeriodEnd: timestamp("stripe_current_period_end").notNull(),
 });
+
+export const exams = pgTable("exams", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  courseId: integer("course_id")
+    .references(() => courses.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  order: integer("order").notNull(),
+});
+
+export const examsRelations = relations(exams, ({ one, many }) => ({
+  course: one(courses, {
+    fields: [exams.courseId],
+    references: [courses.id],
+  }),
+  examLessons: many(examLessons),
+  examResults: many(examResults),
+}));
+
+export const examLessons = pgTable("exam_lessons", {
+  id: serial("id").primaryKey(),
+  examId: integer("exam_id")
+    .references(() => exams.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  lessonId: integer("lesson_id")
+    .references(() => lessons.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  order: integer("order").notNull(),
+});
+
+export const examLessonsRelations = relations(examLessons, ({ one }) => ({
+  exam: one(exams, {
+    fields: [examLessons.examId],
+    references: [exams.id],
+  }),
+  lesson: one(lessons, {
+    fields: [examLessons.lessonId],
+    references: [lessons.id],
+  }),
+}));
+
+export const examResults = pgTable("exam_results", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  examId: integer("exam_id")
+    .references(() => exams.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  score: integer("score").notNull(),
+  totalQuestions: integer("total_questions").notNull(),
+  answers: text("answers").notNull(), // JSON string: [{challengeId, selectedOptionId, correct}]
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+});
+
+export const examResultsRelations = relations(examResults, ({ one }) => ({
+  exam: one(exams, {
+    fields: [examResults.examId],
+    references: [exams.id],
+  }),
+}));

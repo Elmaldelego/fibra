@@ -59,7 +59,7 @@ st.markdown('<div class="main-header">📚 FIBRA - Sistema de Gestión de Conten
 st.sidebar.title("Navegación")
 page = st.sidebar.radio(
     "Selecciona una sección:",
-    ["🏠 Inicio", "📖 Cursos", "📑 Unidades", "📝 Lecciones", "🎯 Desafíos", "📤 Carga Masiva"]
+    ["🏠 Inicio", "📖 Cursos", "📑 Unidades", "📝 Lecciones", "🎯 Desafíos", "📋 Exámenes", "📤 Carga Masiva"]
 )
 
 # Test database connection
@@ -631,6 +631,174 @@ elif page == "🎯 Desafíos":
                             st.error("El texto de la opción es obligatorio")
             else:
                 st.warning("Primero debes crear desafíos")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+
+# ==================== EXAMS PAGE ====================
+elif page == "📋 Exámenes":
+    st.markdown("## Gestión de Exámenes")
+    
+    tab1, tab2, tab3 = st.tabs(["📋 Ver Exámenes", "➕ Crear/Editar Examen", "📝 Asignar Lecciones"])
+    
+    with tab1:
+        st.markdown("### Exámenes existentes")
+        
+        try:
+            courses = db_utils.get_courses()
+            if courses:
+                course_options = {c['id']: c['title'] for c in courses}
+                selected_course = st.selectbox(
+                    "Filtrar por curso:",
+                    options=[None] + list(course_options.keys()),
+                    format_func=lambda x: "Todos los cursos" if x is None else course_options[x],
+                    key="exam_filter_course"
+                )
+                
+                exams = db_utils.get_exams(selected_course)
+                if exams:
+                    for exam in exams:
+                        col1, col2, col3 = st.columns([3, 1, 1])
+                        with col1:
+                            st.write(f"**{exam['title']}** (ID: {exam['id']}, Orden: {exam['order']})")
+                            st.caption(f"Descripción: {exam['description']}")
+                            st.caption(f"Curso ID: {exam['course_id']}")
+                            
+                            # Show assigned lessons
+                            exam_lessons = db_utils.get_exam_lessons(exam['id'])
+                            if exam_lessons:
+                                st.caption(f"📝 {len(exam_lessons)} lecciones asignadas")
+                        with col2:
+                            if st.button("✏️ Editar", key=f"edit_exam_{exam['id']}"):
+                                st.session_state['edit_exam'] = exam
+                                st.rerun()
+                        with col3:
+                            if st.button("🗑️ Eliminar", key=f"delete_exam_{exam['id']}"):
+                                if st.session_state.get(f"confirm_delete_exam_{exam['id']}", False):
+                                    db_utils.delete_exam(exam['id'])
+                                    st.success(f"Examen '{exam['title']}' eliminado")
+                                    st.rerun()
+                                else:
+                                    st.session_state[f"confirm_delete_exam_{exam['id']}"] = True
+                                    st.warning("Haz clic de nuevo para confirmar")
+                        st.divider()
+                else:
+                    st.info("No hay exámenes para este filtro")
+            else:
+                st.warning("Primero debes crear cursos")
+        except Exception as e:
+            st.error(f"Error al cargar exámenes: {str(e)}")
+    
+    with tab2:
+        st.markdown("### Crear o editar examen")
+        
+        try:
+            courses = db_utils.get_courses()
+            if courses:
+                edit_exam = st.session_state.get('edit_exam', None)
+                
+                with st.form("exam_form"):
+                    course_options = {c['id']: c['title'] for c in courses}
+                    course_id = st.selectbox(
+                        "Curso",
+                        options=list(course_options.keys()),
+                        format_func=lambda x: course_options[x],
+                        index=list(course_options.keys()).index(edit_exam['course_id']) if edit_exam else 0
+                    )
+                    
+                    title = st.text_input("Título del examen", value=edit_exam['title'] if edit_exam else "")
+                    description = st.text_area("Descripción", value=edit_exam['description'] if edit_exam else "")
+                    order = st.number_input("Orden", min_value=1, value=edit_exam['order'] if edit_exam else 1)
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        submit = st.form_submit_button("💾 Guardar")
+                    with col2:
+                        cancel = st.form_submit_button("❌ Cancelar")
+                    
+                    if submit and title and description:
+                        try:
+                            if edit_exam:
+                                db_utils.update_exam(edit_exam['id'], title, description, course_id, order)
+                                st.success(f"Examen '{title}' actualizado correctamente")
+                                st.session_state.pop('edit_exam', None)
+                            else:
+                                exam_id = db_utils.create_exam(title, description, course_id, order)
+                                st.success(f"Examen '{title}' creado con ID: {exam_id}")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al guardar examen: {str(e)}")
+                    elif submit:
+                        st.error("Por favor completa todos los campos")
+                    
+                    if cancel:
+                        st.session_state.pop('edit_exam', None)
+                        st.rerun()
+            else:
+                st.warning("Primero debes crear cursos")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+    
+    with tab3:
+        st.markdown("### Asignar lecciones a exámenes")
+        
+        try:
+            exams = db_utils.get_exams()
+            if exams:
+                exam_options = {e['id']: f"{e['title']} (ID: {e['id']})" for e in exams}
+                selected_exam = st.selectbox(
+                    "Selecciona un examen:",
+                    options=list(exam_options.keys()),
+                    format_func=lambda x: exam_options[x]
+                )
+                
+                st.markdown("#### Lecciones asignadas")
+                exam_lessons = db_utils.get_exam_lessons(selected_exam)
+                if exam_lessons:
+                    for el in exam_lessons:
+                        col1, col2 = st.columns([4, 1])
+                        with col1:
+                            st.write(f"**{el['lesson_title']}** (Lección ID: {el['lesson_id']}, Orden: {el['order']})")
+                        with col2:
+                            if st.button("🗑️", key=f"remove_lesson_{el['id']}"):
+                                db_utils.remove_lesson_from_exam(el['id'])
+                                st.success("Lección removida del examen")
+                                st.rerun()
+                        st.divider()
+                else:
+                    st.info("No hay lecciones asignadas a este examen")
+                
+                st.markdown("#### Agregar lección")
+                
+                # Get exam's course to filter lessons
+                exam_data = next((e for e in exams if e['id'] == selected_exam), None)
+                if exam_data:
+                    lessons = db_utils.get_lessons()
+                    # Filter lessons by the exam's course
+                    units = db_utils.get_units(exam_data['course_id'])
+                    unit_ids = [u['id'] for u in units]
+                    available_lessons = [l for l in lessons if l['unit_id'] in unit_ids]
+                    
+                    if available_lessons:
+                        with st.form("add_lesson_form"):
+                            lesson_options = {l['id']: f"{l['title']} (ID: {l['id']})" for l in available_lessons}
+                            lesson_id = st.selectbox(
+                                "Selecciona una lección:",
+                                options=list(lesson_options.keys()),
+                                format_func=lambda x: lesson_options[x]
+                            )
+                            order = st.number_input("Orden en el examen", min_value=1, value=len(exam_lessons) + 1)
+                            
+                            if st.form_submit_button("➕ Agregar lección"):
+                                try:
+                                    db_utils.add_lesson_to_exam(selected_exam, lesson_id, order)
+                                    st.success("Lección agregada al examen")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Error al agregar lección: {str(e)}")
+                    else:
+                        st.warning("No hay lecciones disponibles en el curso de este examen")
+            else:
+                st.warning("Primero debes crear exámenes")
         except Exception as e:
             st.error(f"Error: {str(e)}")
 

@@ -7,6 +7,9 @@ import db from "./drizzle";
 import {
   challengeProgress,
   courses,
+  examLessons,
+  examResults,
+  exams,
   lessons,
   units,
   userProgress,
@@ -244,3 +247,101 @@ export const getTopTenUsers = cache(async () => {
 
   return data;
 });
+
+// Exam queries
+export const getExams = cache(async () => {
+  const { userId } = await auth();
+  const userProgressData = await getUserProgress();
+
+  if (!userId || !userProgressData?.activeCourseId) return [];
+
+  const data = await db.query.exams.findMany({
+    where: eq(exams.courseId, userProgressData.activeCourseId),
+    orderBy: (exams, { asc }) => [asc(exams.order)],
+    with: {
+      examLessons: {
+        orderBy: (examLessons, { asc }) => [asc(examLessons.order)],
+        with: {
+          lesson: {
+            with: {
+              challenges: {
+                orderBy: (challenges, { asc }) => [asc(challenges.order)],
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return data;
+});
+
+export const getExamById = cache(async (examId: number) => {
+  const { userId } = await auth();
+
+  if (!userId) return null;
+
+  const data = await db.query.exams.findFirst({
+    where: eq(exams.id, examId),
+    with: {
+      examLessons: {
+        orderBy: (examLessons, { asc }) => [asc(examLessons.order)],
+        with: {
+          lesson: {
+            with: {
+              challenges: {
+                orderBy: (challenges, { asc }) => [asc(challenges.order)],
+                with: {
+                  challengeOptions: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return data;
+});
+
+export const saveExamResult = async (
+  examId: number,
+  score: number,
+  totalQuestions: number,
+  answers: { challengeId: number; selectedOptionId: number; correct: boolean }[]
+) => {
+  const { userId } = await auth();
+
+  if (!userId) throw new Error("Unauthorized");
+
+  await db.insert(examResults).values({
+    userId,
+    examId,
+    score,
+    totalQuestions,
+    answers: JSON.stringify(answers),
+  });
+};
+
+export const getExamResults = cache(async (examId: number) => {
+  const { userId } = await auth();
+
+  if (!userId) return [];
+
+  const data = await db.query.examResults.findMany({
+    where: eq(examResults.examId, examId) && eq(examResults.userId, userId),
+    orderBy: (examResults, { desc }) => [desc(examResults.completedAt)],
+  });
+
+  return data.map((result) => ({
+    ...result,
+    answers: JSON.parse(result.answers) as {
+      challengeId: number;
+      selectedOptionId: number;
+      correct: boolean;
+    }[],
+  }));
+});
+
