@@ -52,3 +52,5 @@ export const DELETE = async (
 
   return NextResponse.json(data[0]);
 };
+
+export const dynamic = "force-dynamic";

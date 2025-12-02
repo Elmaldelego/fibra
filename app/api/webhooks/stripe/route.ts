@@ -7,6 +7,8 @@ import db from "@/db/drizzle";
 import { userSubscription } from "@/db/schema";
 import { stripe } from "@/lib/stripe";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = headers().get("Stripe-Signature") as string;

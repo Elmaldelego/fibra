@@ -5,12 +5,72 @@ import { useState } from "react";
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { UnitSelector } from "@/components/unit-selector";
 
-import { Header } from "../learn/header";
 import { Unit } from "./unit";
+import { Header } from "../learn/header";
+
+type Lesson = {
+    id: number;
+    title: string;
+    unitId: number;
+    order: number;
+    completed: boolean;
+    challenges: {
+        id: number;
+        lessonId: number;
+        type: "SELECT" | "ASSIST" | "LISTEN";
+        question: string;
+        order: number;
+        challengeProgress: {
+            id: number;
+            userId: string;
+            challengeId: number;
+            completed: boolean;
+        }[];
+    }[];
+};
+
+type UnitType = {
+    id: number;
+    title: string;
+    description: string;
+    courseId: number;
+    order: number;
+    lessons: Lesson[];
+};
+
+type CourseProgress = {
+    activeLesson?: {
+        id: number;
+        title: string;
+        unitId: number;
+        order: number;
+        unit: {
+            id: number;
+            title: string;
+            description: string;
+            courseId: number;
+            order: number;
+        };
+        challenges: {
+            id: number;
+            lessonId: number;
+            type: "SELECT" | "ASSIST" | "LISTEN";
+            question: string;
+            order: number;
+            challengeProgress: {
+                id: number;
+                userId: string;
+                challengeId: number;
+                completed: boolean;
+            }[];
+        }[];
+    };
+    activeLessonId?: number;
+};
 
 type Props = {
-    units: any[];
-    courseProgress: any;
+    units: UnitType[];
+    courseProgress: CourseProgress;
     lessonPercentage: number;
 };
 
