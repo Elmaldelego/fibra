@@ -43,6 +43,14 @@ export const siteConfig: Metadata = {
     name: "Sanidhya Kumar Verma",
     url: "https://github.com/sanidhyy",
   },
+  manifest: "/manifest.json",
+  icons: {
+    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
 } as const;
 
 export const links = {
