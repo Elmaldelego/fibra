@@ -16,6 +16,7 @@ type LessonButtonProps = {
   locked?: boolean;
   current?: boolean;
   percentage: number;
+  completed?: boolean;
 };
 
 export const LessonButton = ({
@@ -25,6 +26,7 @@ export const LessonButton = ({
   locked,
   current,
   percentage,
+  completed,
 }: LessonButtonProps) => {
   const cycleLength = 8;
   const cycleIndex = index % cycleLength;
@@ -40,11 +42,11 @@ export const LessonButton = ({
 
   const isFirst = index === 0;
   const isLast = index === totalCount;
-  const isCompleted = !current && !locked;
+  const isCompleted = completed;
 
   const Icon = isCompleted ? Check : isLast ? Crown : Star;
 
-  const href = isCompleted ? `/lesson/${id}` : "/lesson";
+  const href = isCompleted ? `/lesson/${id}` : `/lesson/${id}`;
 
   return (
     <Link

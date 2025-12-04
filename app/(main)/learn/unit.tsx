@@ -12,10 +12,10 @@ type UnitProps = {
     completed: boolean;
   })[];
   activeLesson:
-    | (typeof lessons.$inferSelect & {
-        unit: typeof units.$inferSelect;
-      })
-    | undefined;
+  | (typeof lessons.$inferSelect & {
+    unit: typeof units.$inferSelect;
+  })
+  | undefined;
   activeLessonPercentage: number;
 };
 
@@ -33,7 +33,8 @@ export const Unit = ({
       <div className="relative flex flex-col items-center">
         {lessons.map((lesson, i) => {
           const isCurrent = lesson.id === activeLesson?.id;
-          const isLocked = !lesson.completed && !isCurrent;
+          // const isLocked = !lesson.completed && !isCurrent;
+          const isLocked = false; // Always unlocked
 
           return (
             <LessonButton
@@ -44,6 +45,7 @@ export const Unit = ({
               current={isCurrent}
               locked={isLocked}
               percentage={activeLessonPercentage}
+              completed={lesson.completed}
             />
           );
         })}
