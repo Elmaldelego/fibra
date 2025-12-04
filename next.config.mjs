@@ -100,7 +100,7 @@ export default withPWA({
     },
     {
       urlPattern: /\.(?:mp3|wav|ogg)$/i,
-      handler: 'CacheFirst',
+      handler: 'NetworkFirst',
       options: {
         rangeRequests: true,
         cacheName: 'static-audio-assets',
