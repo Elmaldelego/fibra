@@ -23,6 +23,11 @@ export const Challenge = ({
   type,
   audioSrc,
 }: ChallengeProps) => {
+  // Debug: verificar si audioSrc está llegando
+  console.log("🎵 Challenge audioSrc:", audioSrc);
+  console.log("🎵 audioSrc type:", typeof audioSrc);
+  console.log("🎵 audioSrc truthy?:", !!audioSrc);
+
   return (
     <div className="flex flex-col gap-6">
       {/* Mostrar reproductor de audio si existe audioSrc */}
